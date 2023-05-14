@@ -1,7 +1,7 @@
 use chrono::NaiveDate;
+use log::{error, info};
 use serde::{Deserialize, Deserializer, Serialize};
 use std::{collections::HashMap, fmt::Debug, time::Duration};
-use log::{error, info};
 
 const THIRTY_SECONDS: Duration = Duration::from_secs(30);
 
@@ -52,11 +52,9 @@ where
 }
 
 fn generate_office_id_map(v: Vec<Office>) -> HashMap<String, String> {
-    let id_map = v
-        .into_iter()
+    v.into_iter()
         .map(|o| (o.office_id, o.eng.district))
-        .collect();
-    id_map
+        .collect()
 }
 
 fn main() -> color_eyre::Result<()> {
@@ -94,13 +92,13 @@ fn main() -> color_eyre::Result<()> {
         let date_format = "%m/%d/%Y";
 
         for d in r.data {
-            let naive_date = NaiveDate::parse_from_str(&d.date, &date_format)?;
+            let naive_date = NaiveDate::parse_from_str(&d.date, date_format)?;
             let condition = (naive_date >= start_date_before_japan
                 && naive_date <= end_date_before_japan
-                && (d.quota_r == true || d.quota_k == true))
+                && (d.quota_r || d.quota_k))
                 || (naive_date >= start_date_after_japan
                     && naive_date <= end_date_after_japan
-                    && (d.quota_r == true || d.quota_k == true));
+                    && (d.quota_r || d.quota_k));
 
             if !condition {
                 continue;
